@@ -5,6 +5,10 @@ import io, { Socket } from "socket.io-client";
 import { RoomSocket } from "../../utils/roomSocket";
 import { tuneShareQuality } from "../../utils/shareQuality";
 import {
+  cuesToSrt,
+  extractSubtitleTracks,
+} from "../../utils/embeddedSubtitles";
+import {
   formatSpeed,
   iceServers,
   isMobile,
@@ -1210,6 +1214,34 @@ export class App extends React.Component<AppProps, AppState> {
         file: true,
         mediasoup: useMediaSoup,
       });
+      void this.shareEmbeddedSubtitles(file);
+    }
+  };
+
+  // Browsers ignore subtitles stored inside a video file and the shared
+  // stream does not carry them, so send the first text track to the room.
+  shareEmbeddedSubtitles = async (file: Blob) => {
+    const stream = this.localStreamToPublish;
+    try {
+      const tracks = await extractSubtitleTracks(file);
+      // The scan can take a while; the share may have ended or changed.
+      if (tracks.length === 0 || this.localStreamToPublish !== stream) {
+        return;
+      }
+      const resp = await fetch(serverPath + "/subtitle", {
+        method: "POST",
+        body: cuesToSrt(tracks[0].cues),
+        headers: { "Content-Type": "text/plain" },
+      });
+      if (!resp.ok) {
+        throw new Error("subtitle upload failed: HTTP " + resp.status);
+      }
+      const json = await resp.json();
+      if (this.localStreamToPublish === stream) {
+        this.socket.emit("CMD:subtitle", serverPath + "/subtitle/" + json.hash);
+      }
+    } catch (e) {
+      console.warn("[share] could not share embedded subtitles", e);
     }
   };
 

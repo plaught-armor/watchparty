@@ -93,6 +93,12 @@ export const isClientTranscodeSupported = (): boolean => {
  * Whether this browser can play the file as it is, judged by its container and the codecs of all its tracks.
  * Files that mediabunny can't read count as playable, since converting them is not an option either.
  */
+/**
+ * True when this browser can play the file as it is: it accepts the container
+ * and the codec of every video and audio track. A track whose codec cannot be
+ * identified counts as unplayable, so the file gets converted instead of
+ * playing without picture or sound.
+ */
 export const canPlayNatively = async (file: Blob): Promise<boolean> => {
   const mb = await import("mediabunny");
   const input = new mb.Input({
@@ -100,8 +106,24 @@ export const canPlayNatively = async (file: Blob): Promise<boolean> => {
     formats: mb.ALL_FORMATS,
   });
   try {
-    const mime = await input.getMimeType();
-    return document.createElement("video").canPlayType(mime) !== "";
+    const probe = document.createElement("video");
+    const container = (await input.getFormat()).mimeType;
+    if (probe.canPlayType(container) === "") {
+      return false;
+    }
+    for (const track of await input.getTracks()) {
+      if (!track.isVideoTrack() && !track.isAudioTrack()) {
+        continue;
+      }
+      const codec = track.codec && (await track.getCodecParameterString());
+      if (
+        !codec ||
+        probe.canPlayType(`${container}; codecs="${codec}"`) === ""
+      ) {
+        return false;
+      }
+    }
+    return true;
   } catch (e) {
     console.warn("[clientTranscode] couldn't inspect file, playing as is", e);
     return true;
