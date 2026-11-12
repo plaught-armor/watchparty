@@ -15,7 +15,7 @@ import {
 import { getCurrentSettings, updateSettings } from "./LocalSettings";
 import { serverPath } from "../../utils/utils";
 import { PermanentRoomModal } from "../Modal/PermanentRoomModal";
-import { Socket } from "socket.io-client";
+import { RoomSocket } from "../../utils/roomSocket";
 import { HexColorPicker, HexColorInput } from "react-colorful";
 import { MetadataContext } from "../../MetadataContext";
 import {
@@ -37,7 +37,7 @@ interface SettingsModalProps {
   setModalOpen: (open: boolean) => void;
   roomLock: string;
   setRoomLock: (lock: boolean) => Promise<void>;
-  socket: Socket;
+  socket: RoomSocket;
   roomId: string;
   owner: string | undefined;
   setOwner: (owner: string) => void;

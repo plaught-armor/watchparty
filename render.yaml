@@ -1,0 +1,7 @@
+# Render blueprint: one free Docker web service running the Go server.
+services:
+  - type: web
+    name: watchparty
+    runtime: docker
+    plan: free
+    healthCheckPath: /ping

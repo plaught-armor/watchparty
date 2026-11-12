@@ -9,7 +9,7 @@ import {
   ActionIcon,
   Divider,
 } from "@mantine/core";
-import { Socket } from "socket.io-client";
+import { RoomSocket } from "../../utils/roomSocket";
 import { openFileSelector, serverPath } from "../../utils/utils";
 import config from "../../config";
 import { MetadataContext } from "../../MetadataContext";
@@ -25,7 +25,7 @@ export class SubtitleModal extends React.Component<{
   roomSubtitle: string | undefined;
   haveLock: () => boolean;
   roomMedia: string;
-  socket: Socket;
+  socket: RoomSocket;
   getMediaDisplayName: (input: string) => string;
   setSubtitleMode: (mode?: TextTrackMode) => void;
   getSubtitleMode: () => TextTrackMode;

@@ -2,6 +2,7 @@ import type MediasoupClient from "mediasoup-client";
 import React from "react";
 import { Alert, Loader, Menu, Overlay, Select, Title } from "@mantine/core";
 import io, { Socket } from "socket.io-client";
+import { RoomSocket } from "../../utils/roomSocket";
 import {
   formatSpeed,
   iceServers,
@@ -25,7 +26,6 @@ import {
   isDash,
   VIDEO_MAX_HEIGHT_CSS,
   softWhite,
-  getSavedPasswords,
 } from "../../utils/utils";
 import { generateName } from "../../utils/generateName";
 import { Chat } from "../Chat/Chat";
@@ -276,7 +276,7 @@ export class App extends React.Component<AppProps, AppState> {
     audioTracks: undefined,
     audioTrackId: undefined,
   };
-  socket: Socket = null!;
+  socket: RoomSocket = null!;
   mediasoupPubSocket: Socket | null = null;
   mediasoupSubSocket: Socket | null = null;
   ytDebounce = true;
@@ -355,21 +355,11 @@ export class App extends React.Component<AppProps, AppState> {
   };
 
   join = async (roomId: string) => {
-    const password = getSavedPasswords()[roomId] ?? "";
-    const response = await fetch(serverPath + "/resolveShard" + roomId);
-    const shard = Number(await response.text()) || "";
-    const socket = io(serverPath + roomId, {
-      transports: ["websocket"],
-      query: {
-        clientId,
-        password,
-        shard,
-        roomId: roomId.slice(1),
-      },
-      auth: {
-        sessionId: getOrCreateSessionId(),
-      },
-    });
+    // serverPath is http(s)://host, so this yields ws(s)://host/ws/<room>.
+    const socket = new RoomSocket(
+      serverPath.replace(/^http/, "ws") + "/ws" + roomId,
+      { clientId, sessionId: getOrCreateSessionId() },
+    );
     this.socket = socket;
     socket.on("connect", async () => {
       this.setState({

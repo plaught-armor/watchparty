@@ -23,7 +23,7 @@ import {
   isEmojiString,
 } from "../../utils/utils";
 import { UserMenu } from "../UserMenu/UserMenu";
-import { Socket } from "socket.io-client";
+import { RoomSocket } from "../../utils/roomSocket";
 import {
   CSSTransition,
   SwitchTransition,
@@ -39,7 +39,7 @@ interface ChatProps {
   chat: ChatMessage[];
   nameMap: StringDict;
   pictureMap: StringDict;
-  socket: Socket;
+  socket: RoomSocket;
   scrollTimestamp: number;
   className?: string;
   getMediaDisplayName: (input?: string) => string;
@@ -432,7 +432,7 @@ const ChatMessage = ({
   nameMap: StringDict;
   pictureMap: StringDict;
   formatMessage: (cmd: string, msg?: string) => React.ReactNode;
-  socket: Socket;
+  socket: RoomSocket;
   owner: string | undefined;
   isChatDisabled: boolean | undefined;
   setReactionMenu: (

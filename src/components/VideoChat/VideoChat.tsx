@@ -1,6 +1,6 @@
 import React from "react";
 import { ActionIcon, Button } from "@mantine/core";
-import { Socket } from "socket.io-client";
+import { RoomSocket } from "../../utils/roomSocket";
 
 import {
   formatTimestamp,
@@ -21,7 +21,7 @@ import {
 } from "@tabler/icons-react";
 
 interface VideoChatProps {
-  socket: Socket;
+  socket: RoomSocket;
   participants: User[];
   pictureMap: StringDict;
   nameMap: StringDict;

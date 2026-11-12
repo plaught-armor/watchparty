@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { Menu } from "@mantine/core";
-import { Socket } from "socket.io-client";
+import { RoomSocket } from "../../utils/roomSocket";
 // import styles from './UserMenu.module.css';
 import { MetadataContext } from "../../MetadataContext";
 import { IconBan, IconTrashFilled, IconX } from "@tabler/icons-react";
@@ -14,7 +14,7 @@ export const UserMenu = ({
   timestamp,
   isChatMessage,
 }: {
-  socket: Socket;
+  socket: RoomSocket;
   userToManage: string;
   trigger: React.ReactNode;
   icon?: string;
