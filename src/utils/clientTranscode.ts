@@ -89,6 +89,27 @@ export const isClientTranscodeSupported = (): boolean => {
   );
 };
 
+/**
+ * Whether this browser can play the file as it is, judged by its container and the codecs of all its tracks.
+ * Files that mediabunny can't read count as playable, since converting them is not an option either.
+ */
+export const canPlayNatively = async (file: Blob): Promise<boolean> => {
+  const mb = await import("mediabunny");
+  const input = new mb.Input({
+    source: new mb.BlobSource(file),
+    formats: mb.ALL_FORMATS,
+  });
+  try {
+    const mime = await input.getMimeType();
+    return document.createElement("video").canPlayType(mime) !== "";
+  } catch (e) {
+    console.warn("[clientTranscode] couldn't inspect file, playing as is", e);
+    return true;
+  } finally {
+    input.dispose();
+  }
+};
+
 let ac3Registered = false;
 const registerAc3 = async () => {
   if (ac3Registered) {

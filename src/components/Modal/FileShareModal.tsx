@@ -95,7 +95,7 @@ export const FileShareModal = (props: {
         disabled={!canConvert}
         checked={convert}
         onChange={(e) => setConvert(e.currentTarget.checked)}
-        label="Convert video on my device before sharing (use if video or audio doesn't share)"
+        label="Always convert video on my device before sharing (automatic for files this browser can't play)"
         description={
           canConvert
             ? "Converts to a web-compatible format, which uses your CPU/GPU. Also allows choosing between audio tracks of converted files (e.g. languages)."

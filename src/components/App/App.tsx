@@ -3,6 +3,7 @@ import React from "react";
 import { Alert, Loader, Menu, Overlay, Select, Title } from "@mantine/core";
 import io, { Socket } from "socket.io-client";
 import { RoomSocket } from "../../utils/roomSocket";
+import { tuneShareQuality } from "../../utils/shareQuality";
 import {
   formatSpeed,
   iceServers,
@@ -44,6 +45,7 @@ import { PasswordModal } from "../Modal/PasswordModal";
 import { ScreenShareModal } from "../Modal/ScreenShareModal";
 import { FileShareModal } from "../Modal/FileShareModal";
 import {
+  canPlayNatively,
   ClientTranscoder,
   isClientTranscodeSupported,
   type AudioTrackInfo,
@@ -1161,14 +1163,20 @@ export class App extends React.Component<AppProps, AppState> {
       return;
     }
     const file = files[0];
-    if (options?.convert && !isClientTranscodeSupported()) {
-      this.showError("Your browser doesn't support converting videos");
+    // Convert without being asked when this browser can't play the file as it is
+    const convert = options?.convert || !(await canPlayNatively(file));
+    if (convert && !isClientTranscodeSupported()) {
+      this.showError(
+        options?.convert
+          ? "Your browser doesn't support converting videos"
+          : "This browser can't play or convert this file. Try Chrome, or convert it to MP4 (H.264 + AAC) first.",
+      );
       return;
     }
     this.stopConvert();
     this.Player().clearState();
     const leftVideo = this.HTMLInterface.getVideoEl();
-    if (options?.convert) {
+    if (convert) {
       const transcoder = this.createTranscoder(file, leftVideo, 0, (err) => {
         // Conversion failed mid-share
         this.showError(`Conversion failed: ${err.message}`);
@@ -1669,6 +1677,7 @@ export class App extends React.Component<AppProps, AppState> {
               pc.addTrack(track, this.localStreamToPublish);
             }
           });
+          tuneShareQuality(pc, this.isLocalStreamAFile);
           pc.onicecandidate = (event) => {
             // We generated an ICE candidate, send it to peer
             if (event.candidate) {
